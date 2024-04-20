@@ -1,5 +1,6 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
+const { get } = require("http");
 
 const maxTimeOut = 5000;
 
@@ -22,10 +23,20 @@ async function sendTelegramMessage(message) {
   await fetch(url, { method: "POST" });
 }
 
+async function getAllRes(page) {
+  const results = [];
+  for (let i = 1; i <= 4; i++) {
+    const result = await page.locator(`div #l${i}`).first().innerText();
+    results.push(result);
+  }
+  return results;
+}
+
 test("has title", async ({ page }) => {
   await login(page);
+  const res = await getAllRes(page);
   // Send notification to Telegram
-  const message = `login successful at ${new Date().toLocaleString()}`;
+  const message = `login successful at ${new Date().toLocaleString()} ${JSON.stringify(res)}`;
   await sendTelegramMessage(message);
   if (process.env.TITLE) {
     await expect(page).toHaveTitle(process.env.TITLE);
