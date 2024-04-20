@@ -14,5 +14,7 @@ async function login(page) {
 
 test("has title", async ({ page }) => {
   await login(page);
-  expect(true).toBe(true);
+  if (process.env.TITLE) {
+    await expect(page).toHaveTitle(process.env.TITLE);
+  }
 });
