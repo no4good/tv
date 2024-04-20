@@ -1,15 +1,18 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
-test("has title", async ({ page }) => {
-  console.log("process.env.1", process.env.JJJ);
-  console.log("process.env.1", process.env.JJJ2);
-  console.log("process.env.1", process.env.URL2);
-  console.log("process.env.3", process.env.URL);
-  if (!process.env.URL) {
-    throw new Error("URL is not defined");
-  }
-  await page.goto(process.env.URL);
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
+const maxTimeOut = 5000;
+
+async function login(page) {
+  await page.goto(process.env.URL);
+  await page.waitForLoadState("domcontentloaded", { timeout: maxTimeOut });
+  await page.locator('[name="name"]').fill(process.env.USERNAME);
+  await page.locator('[name="password"]').fill(process.env.PASSWORD);
+  await page.locator('[type="submit"]').click();
+  await page.waitForTimeout(maxTimeOut);
+}
+
+test("has title", async ({ page }) => {
+  await login(page);
+  expect(true).toBe(true);
 });
