@@ -11,8 +11,6 @@ const { defineConfig, devices } = require("@playwright/test");
  * @see https://playwright.dev/docs/test-configuration
  */
 
-console.log("process.env.CI", process.env);
-
 module.exports = defineConfig({
   testDir: "./tests",
   /* Run tests in files in parallel */
