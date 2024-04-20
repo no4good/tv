@@ -2,7 +2,7 @@ name: Tv
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Run daily at midnight
+    - cron: '*/10 * * * *' # Run every 10 minutes
 
 jobs:
   tv:
@@ -15,7 +15,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '20'
+        node-version: '20.12.2'
 
     - name: Install dependencies
       run: npm install
