@@ -24,7 +24,7 @@ module.exports = defineConfig({
   use: {
     actionTimeout: 300000,
     trace: "off",
-    headless: false,
+    headless: process.env.CI ? true : false,
     channel: "chrome",
     viewport: { width: 1600, height: 960 },
     userAgent:
