@@ -20,6 +20,7 @@ jobs:
       - name: Run Playwright tests
         env:
           URL: ${{ secrets.URL }}
+          JJJ: ${{ env.JJJ }}
         run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
