@@ -2,6 +2,8 @@
 const { test, expect } = require("@playwright/test");
 test("has title", async ({ page }) => {
   console.log("process.env.1", process.env.JJJ);
+  console.log("process.env.1", process.env.JJJ2);
+  console.log("process.env.1", process.env.URL2);
   console.log("process.env.3", process.env.URL);
   if (!process.env.URL) {
     throw new Error("URL is not defined");
