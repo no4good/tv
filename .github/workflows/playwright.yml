@@ -20,7 +20,7 @@ jobs:
       - name: Run Playwright tests
         env:
           URL: ${{ secrets.URL }}
-          USERNAME: ${{ secrets.USERNAME }}
+          USERNAME_LOGIN: ${{ secrets.USERNAME_LOGIN }}
           PASSWORD: ${{ secrets.PASSWORD }}
           TITLE: ${{ secrets.TITLE }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
