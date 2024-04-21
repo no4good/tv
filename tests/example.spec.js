@@ -29,7 +29,11 @@ async function getAllRes(page) {
     const result = await page.locator(`div #l${i}`).first().innerText();
     results.push(result);
   }
-  return results;
+  const [capacityOne, capacityTwo] = await page.locator(`.capacity .value`);
+  capacityOne.innerText();
+  capacityTwo.innerText();
+
+  return [results, [capacityOne, capacityTwo]];
 }
 
 test("has title", async ({ page }) => {
