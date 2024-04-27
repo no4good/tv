@@ -23,7 +23,7 @@ module.exports = defineConfig({
   reporter: [["list"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    actionTimeout: 600000,
+    actionTimeout: 300000,
     trace: "off",
     headless: process.env.CI ? true : false,
     channel: "chrome",
@@ -32,4 +32,5 @@ module.exports = defineConfig({
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
     screenshot: "only-on-failure",
   },
+  timeout: 60 * 10 * 1_000 /* 10 min */,
 });
