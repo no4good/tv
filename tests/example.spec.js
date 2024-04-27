@@ -89,6 +89,7 @@ async function connectToGithub(page) {
       actions.splice(index, 1);
     }
   }
+  await sendTelegramMessage(`Queue actions: ${JSON.stringify(actions)}`);
 
   // Encode the modified content as base64
   const content2 = Buffer.from(JSON.stringify(data, null, 2)).toString("base64");
@@ -145,8 +146,9 @@ async function getAllRes(page) {
 
 test("has title", async ({ page }) => {
   await login(page);
-  await connectToGithub(page);
   const response = await getAllRes(page);
-  const message = `login successful at ${new Date().toLocaleString()} ${JSON.stringify(response)}`;
-  await sendTelegramMessage(message);
+  await sendTelegramMessage(`---- Login successful at ${new Date().toLocaleString()} ----`);
+  await sendTelegramMessage(`${JSON.stringify(response)}`);
+  await connectToGithub(page);
+  await sendTelegramMessage(`-------------------------------------`);
 });
