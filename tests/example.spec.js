@@ -35,8 +35,7 @@ async function buildRes(page, res) {
     return null;
   }
   const text = await element.innerText();
-  // await element.click();
-  console.log("Click");
+  await element.click();
   return { result: res, text };
 }
 
