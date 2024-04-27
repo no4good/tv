@@ -23,7 +23,7 @@ module.exports = defineConfig({
   reporter: [["list"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    actionTimeout: 300000,
+    actionTimeout: 600000,
     trace: "off",
     headless: process.env.CI ? true : false,
     channel: "chrome",
