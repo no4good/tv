@@ -4,8 +4,8 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  # schedule:
-  #   - cron: "*/10 * * * *"
+  schedule:
+    - cron: "*/10 * * * *"
 jobs:
   test:
     timeout-minutes: 60
@@ -27,7 +27,11 @@ jobs:
           TITLE: ${{ secrets.TITLE }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: npx playwright test
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_OWNER: ${{ secrets.GH_OWNER }}
+          GH_REPO: ${{ secrets.GH_REPO }}
+          GH_FILENAME: ${{ secrets.GH_FILENAME }}
+        run: npm run test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
