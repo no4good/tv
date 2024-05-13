@@ -1,28 +1,39 @@
 // @ts-check
 const { test } = require("@playwright/test");
 const { Octokit } = require("@octokit/rest");
+// const fs = require("fs");
 
 const maxTimeOut = 5000;
 
 const resMap = {
-  wood1: "id=1&gid=1",
-  wood2: "id=3&gid=1",
-  wood3: "id=14&gid=1",
-  wood4: "id=17&gid=1",
-  clay1: "id=5&gid=2",
-  clay2: "id=6&gid=2",
-  clay3: "id=16&gid=2",
-  clay4: "id=18&gid=2",
-  iron1: "id=4&gid=3",
-  iron2: "id=10&gid=3",
-  iron3: "id=7&gid=3",
-  iron4: "id=11&gid=3",
-  crop1: "id=8&gid=4",
-  crop2: "id=9&gid=4",
-  crop3: "id=12&gid=4",
-  crop4: "id=13&gid=4",
-  crop5: "id=2&gid=4",
-  crop6: "id=15&gid=4",
+  w1: "id=1&gid=1",
+  w2: "id=3&gid=1",
+  w3: "id=14&gid=1",
+  w4: "id=17&gid=1",
+  cl1: "id=5&gid=2",
+  cl2: "id=6&gid=2",
+  cl3: "id=16&gid=2",
+  cl4: "id=18&gid=2",
+  i1: "id=4&gid=3",
+  i2: "id=10&gid=3",
+  i3: "id=7&gid=3",
+  i4: "id=11&gid=3",
+  c1: "id=8&gid=4",
+  c2: "id=9&gid=4",
+  c3: "id=12&gid=4",
+  c4: "id=13&gid=4",
+  c5: "id=2&gid=4",
+  c6: "id=15&gid=4",
+};
+const inVillage = {
+  main_building: "id=26&gid=15",
+  warehouse: "id=31&gid=10",
+  granary: "id=29&gid=11",
+  marketplace: "id=22&gid=17",
+  barracks: "id=20&gid=23",
+  cranny: "id=21&gid=19",
+  embassy: "id=19&gid=18",
+  residence: "id=24&gid=25",
 };
 
 async function buildRes(page, res) {
@@ -144,11 +155,47 @@ async function getAllRes(page) {
   return str;
 }
 
+// async function createScreenshot(page) {
+//   const screenshotBuffer = await page.screenshot();
+
+//   const botToken = process.env.TELEGRAM_BOT_TOKEN;
+//   const chatId = process.env.TELEGRAM_CHAT_ID;
+
+//   const formData = new FormData();
+//   formData.append("chat_id", chatId);
+//   formData.append("photo", {
+//     value: screenshotBuffer,
+//     options: {
+//       filename: "screenshot.png",
+//       contentType: "image/png",
+//     },
+//   });
+
+//   console.log(formData);
+
+//   const a = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+//     method: "POST",
+//     body: formData,
+//     headers: {
+//       "Content-Type": "multipart/form-data",
+//     },
+//   });
+//   console.log(a);
+// }
+
+async function sendAdventures(page) {
+  await page.goto(`${process.env.URL}hero/adventures`);
+  await page.waitForTimeout(maxTimeOut);
+  await page.locator(".adventureList .textButtonV2.buttonFramed.rectangle.withText.green").first().click();
+}
+
 test("has title", async ({ page }) => {
   await login(page);
   const response = await getAllRes(page);
   await sendTelegramMessage(`---- Login successful at ${new Date().toLocaleString()} ----`);
   await sendTelegramMessage(`${JSON.stringify(response)}`);
+  // await createScreenshot(page);
   await connectToGithub(page);
+  await sendAdventures(page);
   await sendTelegramMessage(`-------------------------------------`);
 });
