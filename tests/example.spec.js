@@ -186,7 +186,12 @@ async function getAllRes(page) {
 async function sendAdventures(page) {
   await page.goto(`${process.env.URL}hero/adventures`);
   await page.waitForTimeout(maxTimeOut);
-  await page.locator(".adventureList .textButtonV2.buttonFramed.rectangle.withText.green").first().click();
+  const adventureList = await page
+    .locator(".adventureList .textButtonV2.buttonFramed.rectangle.withText.green")
+    .first();
+  if (adventureList.isVisible()) {
+    await adventureList.click();
+  }
 }
 
 test("has title", async ({ page }) => {
