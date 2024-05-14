@@ -36,6 +36,47 @@ const inVillage = {
   residence: "id=24&gid=25",
 };
 
+const positionDetailsTemplate = (x, y) => `${process.env.URL}position_details.php?x=${x}&y=${y}`;
+const positionRallyPoint = `${process.env.URL}build.php?id=39&gid=16&tt=2`;
+
+async function sendAttack(page, attk) {
+  for (const cords of attk) {
+    const x = `${cords.x}`;
+    const y = `${cords.y}`;
+    await page.goto(positionDetailsTemplate(x, y));
+    await page.waitForTimeout(1500);
+    const title = await page.locator(".titleInHeader").first().innerText();
+    if (title.includes("Unoccupied oasis")) {
+      const isVisible = await page.locator('[id="troop_info"]:not(.rep)', { hasText: "none" }).isVisible();
+      if (isVisible) {
+        await page.goto(positionRallyPoint);
+        const inputElement = await page.locator('input[name="troop[t1]"]:not(.disabled)');
+        if (inputElement) {
+          await inputElement.fill("2");
+          const radioInputs = await page.locator('input[name="eventType"]').elementHandles();
+          if (radioInputs.length === 3) {
+            await radioInputs[2].check();
+          }
+          const xCoordInput = await page.locator('input[id="xCoordInput"]');
+          const yCoordInput = await page.locator('input[id="yCoordInput"]');
+          if (xCoordInput && yCoordInput) {
+            await xCoordInput.fill(x);
+            await yCoordInput.fill(y);
+          }
+          const submitButton = await page.locator('button[type="submit"]');
+          if (submitButton) {
+            await page.waitForTimeout(500);
+            await submitButton.click();
+            await page.waitForTimeout(500);
+            await page.locator(".rallyPointConfirm").first().click();
+            await page.waitForTimeout(500);
+          }
+        }
+      }
+    }
+  }
+}
+
 async function buildRes(page, res) {
   await page.goto(`${process.env.URL}build.php?${resMap[res]}`);
   await page.waitForLoadState("domcontentloaded", { timeout: maxTimeOut });
@@ -76,7 +117,12 @@ async function connectToGithub(page) {
   const data = JSON.parse(content);
 
   // Extract the stack array under the actions key
-  let { actions } = data;
+  let { actions, attk } = data;
+
+  if (attk.length > 0) {
+    await sendTelegramMessage(`Attack actions: ${JSON.stringify(attk)}`);
+    await sendAttack(page, attk);
+  }
 
   if (actions.length === 0) {
     await sendTelegramMessage(`No more actions to perform`);
@@ -189,7 +235,9 @@ async function sendAdventures(page) {
   const adventureList = await page
     .locator(".adventureList .textButtonV2.buttonFramed.rectangle.withText.green")
     .first();
-  if (adventureList.isVisible()) {
+  const isVisible = await adventureList.isVisible();
+  const isDisabled = await adventureList.isDisabled();
+  if (isVisible && isDisabled) {
     await adventureList.click();
   }
 }
