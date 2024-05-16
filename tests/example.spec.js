@@ -236,8 +236,7 @@ async function sendAdventures(page) {
     .locator(".adventureList .textButtonV2.buttonFramed.rectangle.withText.green")
     .first();
   const isVisible = await adventureList.isVisible();
-  const isDisabled = await adventureList.isDisabled();
-  if (isVisible && isDisabled) {
+  if (isVisible) {
     await adventureList.click();
   }
 }
