@@ -40,40 +40,44 @@ const positionDetailsTemplate = (x, y) => `${process.env.URL}position_details.ph
 const positionRallyPoint = `${process.env.URL}build.php?id=39&gid=16&tt=2`;
 
 async function sendAttack(page, attk) {
-  for (const cords of attk) {
-    const x = `${cords.x}`;
-    const y = `${cords.y}`;
-    await page.goto(positionDetailsTemplate(x, y));
-    await page.waitForTimeout(1500);
-    const title = await page.locator(".titleInHeader").first().innerText();
-    if (title.includes("Unoccupied oasis")) {
-      const isVisible = await page.locator('[id="troop_info"]:not(.rep)', { hasText: "none" }).isVisible();
-      if (isVisible) {
-        await page.goto(positionRallyPoint);
-        const inputElement = await page.locator('input[name="troop[t1]"]:not(.disabled)');
-        if (inputElement) {
-          await inputElement.fill("3");
-          const radioInputs = await page.locator('input[name="eventType"]').elementHandles();
-          if (radioInputs.length === 3) {
-            await radioInputs[2].check();
-          }
-          const xCoordInput = await page.locator('input[id="xCoordInput"]');
-          const yCoordInput = await page.locator('input[id="yCoordInput"]');
-          if (xCoordInput && yCoordInput) {
-            await xCoordInput.fill(x);
-            await yCoordInput.fill(y);
-          }
-          const submitButton = await page.locator('button[type="submit"]');
-          if (submitButton) {
-            await page.waitForTimeout(500);
-            await submitButton.click();
-            await page.waitForTimeout(500);
-            await page.locator(".rallyPointConfirm").first().click();
-            await page.waitForTimeout(500);
+  try {
+    for (const cords of attk) {
+      const x = `${cords.x}`;
+      const y = `${cords.y}`;
+      await page.goto(positionDetailsTemplate(x, y));
+      await page.waitForTimeout(1500);
+      const title = await page.locator(".titleInHeader").first().innerText();
+      if (title.includes("Unoccupied oasis")) {
+        const isVisible = await page.locator('[id="troop_info"]:not(.rep)', { hasText: "none" }).isVisible();
+        if (isVisible) {
+          await page.goto(positionRallyPoint);
+          const inputElement = await page.locator('input[name="troop[t1]"]:not(.disabled)');
+          if (inputElement) {
+            await inputElement.fill("3");
+            const radioInputs = await page.locator('input[name="eventType"]').elementHandles();
+            if (radioInputs.length === 3) {
+              await radioInputs[2].check();
+            }
+            const xCoordInput = await page.locator('input[id="xCoordInput"]');
+            const yCoordInput = await page.locator('input[id="yCoordInput"]');
+            if (xCoordInput && yCoordInput) {
+              await xCoordInput.fill(x);
+              await yCoordInput.fill(y);
+            }
+            const submitButton = await page.locator('button[type="submit"]');
+            if (submitButton) {
+              await page.waitForTimeout(500);
+              await submitButton.click();
+              await page.waitForTimeout(500);
+              await page.locator(".rallyPointConfirm").first().click();
+              await page.waitForTimeout(500);
+            }
           }
         }
       }
     }
+  } catch (error) {
+    console.error(error);
   }
 }
 
