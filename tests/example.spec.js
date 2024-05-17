@@ -125,7 +125,7 @@ async function connectToGithub(page) {
   }
 
   if (actions.length === 0) {
-    await sendTelegramMessage(`No more actions to perform`);
+    // await sendTelegramMessage(`No more actions to perform`);
     return;
   }
 
@@ -244,10 +244,10 @@ async function sendAdventures(page) {
 test("has title", async ({ page }) => {
   await login(page);
   const response = await getAllRes(page);
-  await sendTelegramMessage(`---- Login successful at ${new Date().toLocaleString()} ----`);
-  await sendTelegramMessage(`${JSON.stringify(response)}`);
+  // await sendTelegramMessage(`---- Login successful at ${new Date().toLocaleString()} ----`);
+  // await sendTelegramMessage(`${JSON.stringify(response)}`);
   // await createScreenshot(page);
   await connectToGithub(page);
   await sendAdventures(page);
-  await sendTelegramMessage(`-------------------------------------`);
+  // await sendTelegramMessage(`-------------------------------------`);
 });
