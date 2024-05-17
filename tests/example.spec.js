@@ -52,7 +52,7 @@ async function sendAttack(page, attk) {
         await page.goto(positionRallyPoint);
         const inputElement = await page.locator('input[name="troop[t1]"]:not(.disabled)');
         if (inputElement) {
-          await inputElement.fill("2");
+          await inputElement.fill("3");
           const radioInputs = await page.locator('input[name="eventType"]').elementHandles();
           if (radioInputs.length === 3) {
             await radioInputs[2].check();
