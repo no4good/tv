@@ -25,16 +25,25 @@ const resMap = {
   c5: "id=2&gid=4",
   c6: "id=15&gid=4",
 };
-const inVillage = {
-  main_building: "id=26&gid=15",
-  warehouse: "id=31&gid=10",
-  granary: "id=29&gid=11",
-  marketplace: "id=22&gid=17",
-  barracks: "id=20&gid=23",
-  cranny: "id=21&gid=19",
-  embassy: "id=19&gid=18",
-  residence: "id=24&gid=25",
+
+const resKeys = Object.keys(resMap);
+
+const villageMap = {
+  main_building: { id: "id=26", category: 0, name: "Main Building" },
+  warehouse: { id: "id=31", category: 1, name: "Warehouse" },
+  cranny: { id: "id=21", category: 1, name: "Cranny" },
+  granary: { id: "id=29", category: 1, name: "Granary" },
+  embassy: { id: "id=19", category: 1, name: "Embassy" },
+  marketplace: { id: "id=22", category: 1, name: "Marketplace" },
+  residence: { id: "id=24", category: 1, name: "Residence" },
+  barracks: { id: "id=20", category: 2, name: "Barracks" },
+  academy: { id: "id=35", category: 2, name: "Academy" },
+  smithy: { id: "id=32", category: 2, name: "Smithy" },
+  stable: { id: "id=37", category: 2, name: "Stable" },
+  hero: { id: "id=36", category: 2, name: "Hero's Mansion" },
 };
+
+const villageKeys = Object.keys(villageMap);
 
 const positionDetailsTemplate = (x, y) => `${process.env.URL}position_details.php?x=${x}&y=${y}`;
 const positionRallyPoint = `${process.env.URL}build.php?id=39&gid=16&tt=2`;
@@ -81,9 +90,22 @@ async function sendAttack(page, attk) {
   }
 }
 
-async function buildRes(page, res) {
-  await page.goto(`${process.env.URL}build.php?${resMap[res]}`);
+async function clickIfVisible(locator, res, name) {
+  const isAvailable = await locator.isVisible();
+  if (isAvailable) {
+    await locator.click();
+    return { result: res, text: name };
+  }
+  return null;
+}
+
+async function navigateToPage(page, url) {
+  await page.goto(url);
   await page.waitForLoadState("domcontentloaded", { timeout: maxTimeOut });
+}
+
+async function buildRes(page, res) {
+  await navigateToPage(page, `${process.env.URL}build.php?${resMap[res]}`);
   const element = await page.locator(".section1 .green.build");
   await page.waitForTimeout(maxTimeOut);
   const isAvailable = await element.isVisible();
@@ -93,6 +115,29 @@ async function buildRes(page, res) {
   const text = await element.innerText();
   await element.click();
   return { result: res, text };
+}
+
+async function buildVillage(page, res) {
+  const { id, name, category } = villageMap[res];
+  await navigateToPage(page, `${process.env.URL}build.php?${id}`);
+  const titleInHeader = await page.locator(".titleInHeader").first().innerText();
+  if (titleInHeader === "Construct new building") {
+    await navigateToPage(page, `${process.env.URL}build.php?${id}&category=${category}`);
+
+    const button = await page
+      .locator(".buildingWrapper", {
+        has: page.locator("h2", {
+          hasText: name,
+        }),
+      })
+      .locator("button");
+
+    return clickIfVisible(button, res, name);
+  } else {
+    const element = await page.locator(".section1 .green.build");
+    await page.waitForTimeout(maxTimeOut);
+    return await clickIfVisible(element, res, name);
+  }
 }
 
 async function connectToGithub(page) {
@@ -121,7 +166,7 @@ async function connectToGithub(page) {
   const data = JSON.parse(content);
 
   // Extract the stack array under the actions key
-  let { actions, attk } = data;
+  let { actions, attk, sync } = data;
 
   if (attk.length > 0) {
     await sendTelegramMessage(`Attack actions: ${JSON.stringify(attk)}`);
@@ -136,10 +181,20 @@ async function connectToGithub(page) {
   let toBeDeleted;
 
   for (const action of actions) {
-    const res = await buildRes(page, action);
-    if (res) {
-      await sendTelegramMessage(`Built element:${res.result}-${res.text} `);
-      toBeDeleted = res.result;
+    let actionType = null;
+    if (resKeys.includes(action)) {
+      actionType = await buildRes(page, action);
+    }
+    if (villageKeys.includes(action)) {
+      actionType = await buildVillage(page, action);
+    }
+
+    if (actionType) {
+      await sendTelegramMessage(`Built element:${actionType.result}-${actionType.text} `);
+      toBeDeleted = actionType.result;
+      break;
+    }
+    if (sync) {
       break;
     }
   }
@@ -247,7 +302,7 @@ async function sendAdventures(page) {
 
 test("has title", async ({ page }) => {
   await login(page);
-  const response = await getAllRes(page);
+  // const response = await getAllRes(page);
   // await sendTelegramMessage(`---- Login successful at ${new Date().toLocaleString()} ----`);
   // await sendTelegramMessage(`${JSON.stringify(response)}`);
   // await createScreenshot(page);
