@@ -41,6 +41,7 @@ const villageMap = {
   smithy: { id: "id=32", category: 2, name: "Smithy" },
   stable: { id: "id=37", category: 2, name: "Stable" },
   hero: { id: "id=36", category: 2, name: "Hero's Mansion" },
+  wall: { id: "id=40", category: 0, name: "Stone Wall" },
 };
 
 const villageKeys = Object.keys(villageMap);
@@ -178,7 +179,7 @@ async function connectToGithub(page) {
     return;
   }
 
-  let toBeDeleted;
+  let toBeDeleted = [];
 
   for (const action of actions) {
     let actionType = null;
@@ -191,20 +192,20 @@ async function connectToGithub(page) {
 
     if (actionType) {
       await sendTelegramMessage(`Built element:${actionType.result}-${actionType.text} `);
-      toBeDeleted = actionType.result;
-      break;
+      toBeDeleted.push(actionType.result);
     }
     if (sync) {
       break;
     }
   }
 
-  if (toBeDeleted) {
-    const index = actions.findIndex((action) => action === toBeDeleted);
+  for (const deleted of toBeDeleted) {
+    const index = actions.findIndex((action) => action === deleted);
     if (index !== -1) {
       actions.splice(index, 1);
     }
   }
+
   await sendTelegramMessage(`Queue actions: ${JSON.stringify(actions)}`);
 
   // Encode the modified content as base64
