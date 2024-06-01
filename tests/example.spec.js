@@ -131,7 +131,7 @@ async function buildVillage(page, res) {
           hasText: name,
         }),
       })
-      .locator("button");
+      .locator(".textButtonV1.green");
 
     return clickIfVisible(button, res, name);
   } else {
