@@ -6,24 +6,24 @@ const { Octokit } = require("@octokit/rest");
 const maxTimeOut = 5000;
 
 const resMap = {
-  w1: "id=1&gid=1",
-  w2: "id=3&gid=1",
-  w3: "id=14&gid=1",
-  w4: "id=17&gid=1",
-  cl1: "id=5&gid=2",
-  cl2: "id=6&gid=2",
-  cl3: "id=16&gid=2",
-  cl4: "id=18&gid=2",
-  i1: "id=4&gid=3",
-  i2: "id=10&gid=3",
-  i3: "id=7&gid=3",
-  i4: "id=11&gid=3",
-  c1: "id=8&gid=4",
-  c2: "id=9&gid=4",
-  c3: "id=12&gid=4",
-  c4: "id=13&gid=4",
-  c5: "id=2&gid=4",
-  c6: "id=15&gid=4",
+  w1: "id=1",
+  w2: "id=3",
+  w3: "id=14",
+  w4: "id=17",
+  cl1: "id=5",
+  cl2: "id=6",
+  cl3: "id=16",
+  cl4: "id=18",
+  i1: "id=4",
+  i2: "id=10",
+  i3: "id=7",
+  i4: "id=11",
+  c1: "id=8",
+  c2: "id=9",
+  c3: "id=12",
+  c4: "id=13",
+  c5: "id=2",
+  c6: "id=15",
 };
 
 const resKeys = Object.keys(resMap);
@@ -105,8 +105,8 @@ async function navigateToPage(page, url) {
   await page.waitForLoadState("domcontentloaded", { timeout: maxTimeOut });
 }
 
-async function buildRes(page, res) {
-  await navigateToPage(page, `${process.env.URL}build.php?${resMap[res]}`);
+async function buildRes(page, key, res) {
+  await navigateToPage(page, `${process.env.URL}build.php?newdid=${key}&${resMap[res]}`);
   const element = await page.locator(".section1 .green.build");
   await page.waitForTimeout(maxTimeOut);
   const isAvailable = await element.isVisible();
@@ -118,12 +118,12 @@ async function buildRes(page, res) {
   return { result: res, text };
 }
 
-async function buildVillage(page, res) {
+async function buildVillage(page, key, res) {
   const { id, name, category } = villageMap[res];
   await navigateToPage(page, `${process.env.URL}build.php?${id}`);
   const titleInHeader = await page.locator(".titleInHeader").first().innerText();
   if (titleInHeader === "Construct new building") {
-    await navigateToPage(page, `${process.env.URL}build.php?${id}&category=${category}`);
+    await navigateToPage(page, `${process.env.URL}build.php?newdid=${key}&${id}&category=${category}`);
 
     const button = await page
       .locator(".buildingWrapper", {
@@ -174,35 +174,37 @@ async function connectToGithub(page) {
     await sendAttack(page, attk);
   }
 
-  if (actions.length === 0) {
+  if (Object.keys(actions).length === 0) {
     // await sendTelegramMessage(`No more actions to perform`);
     return;
   }
 
   let toBeDeleted = [];
 
-  for (const action of actions) {
-    let actionType = null;
-    if (resKeys.includes(action)) {
-      actionType = await buildRes(page, action);
-    }
-    if (villageKeys.includes(action)) {
-      actionType = await buildVillage(page, action);
-    }
+  for (const key in actions) {
+    for (const action of actions[key]) {
+      let actionType = null;
+      if (resKeys.includes(action)) {
+        actionType = await buildRes(page, key, action);
+      }
+      if (villageKeys.includes(action)) {
+        actionType = await buildVillage(page, key, action);
+      }
 
-    if (actionType) {
-      await sendTelegramMessage(`Built element:${actionType.result}-${actionType.text} `);
-      toBeDeleted.push(actionType.result);
-    }
-    if (sync) {
-      break;
+      if (actionType) {
+        await sendTelegramMessage(`Built element:${actionType.result}-${actionType.text} `);
+        toBeDeleted.push({ key: key, result: actionType.result });
+      }
+      if (sync) {
+        break;
+      }
     }
   }
 
   for (const deleted of toBeDeleted) {
-    const index = actions.findIndex((action) => action === deleted);
+    const index = actions[deleted.key].findIndex((action) => action === deleted.result);
     if (index !== -1) {
-      actions.splice(index, 1);
+      actions[deleted.key].splice(index, 1);
     }
   }
 
