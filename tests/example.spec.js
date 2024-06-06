@@ -310,6 +310,5 @@ test("has title", async ({ page }) => {
   // await sendTelegramMessage(`${JSON.stringify(response)}`);
   // await createScreenshot(page);
   await connectToGithub(page);
-  await sendAdventures(page);
   // await sendTelegramMessage(`-------------------------------------`);
 });
